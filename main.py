@@ -108,7 +108,7 @@ if selected == "Home":
         col_features1, col_features2, col_features3 = st.columns(3)
 
         date=create_date_picker(df, 'date', 'Select a Date:', col_features1)
-        store_nbr = col_features2.selectbox('Store Number', np.sort(df['store_nbr'].unique()))
+        store_nbr = col_features2.selectbox('Store Number', np.sort([1, 2, 3]))
         family = col_features3.selectbox('Family Type', np.sort(df['family'].unique()))
         is_holiday = col_features1.radio('İs it a holiday (1 holiday, 0 not a holiday', np.sort(df['is_holiday'].unique())) 
         nat_terremoto = col_features2.radio('Earthquake (earthquake in process or not)', np.sort(df['nat_terremoto'].unique()))
@@ -159,31 +159,36 @@ if selected == "Home":
             input_df= model_func.target_log_transmission(input_df) 
             input_df= model_func.selected_df(input_df,store_nbr, family)
             
-            
-            model = load_model(store_nbr, family)
-            input_df.drop(columns=["date", "store_nbr", "family", "year","sales"], inplace=True) 
 
             try:
-                input_df= input_df[model.feature_name_]
-            except: 
-                try:
-                    input_df = input_df[model.feature_name()]
-                except:
-                    try:
-                        input_df= input_df[model.feature_names_in_]                      
-                    except:
-                        input_df = input_df[model.get_booster().feature_names]
+                model = load_model(store_nbr, family)
+                input_df.drop(columns=["date", "store_nbr", "family", "year","sales"], inplace=True) 
     
-            model_output = model.predict(input_df)
-            Y_pred_original = np.expm1(model_output)
+                try:
+                    input_df= input_df[model.feature_name_]
+                except: 
+                    try:
+                        input_df = input_df[model.feature_name()]
+                    except:
+                        try:
+                            input_df= input_df[model.feature_names_in_]                      
+                        except:
+                            input_df = input_df[model.get_booster().feature_names]
+        
+                model_output = model.predict(input_df)
+                Y_pred_original = np.expm1(model_output)
+                
+                input_dict["Total Sales($)"] = Y_pred_original
+    
+                if int(Y_pred_original[0]) < 0:
+                    Y_pred_original[0] = 0
+                formatted_output = f"<b>{Y_pred_original[0]}</b>"
+                st.write(f"Your total predicted sales will be :  {formatted_output}", unsafe_allow_html=True)
+            except:
+                st.write("Your total predicted sales will be :  0", unsafe_allow_html=True)
+                
+
             
-            input_dict["Total Sales($)"] = Y_pred_original
-
-            if int(Y_pred_original[0]) < 0:
-                Y_pred_original[0] = 0
-            formatted_output = f"<b>{Y_pred_original[0]}</b>"
-            st.write(f"Your total predicted sales will be :  {formatted_output}", unsafe_allow_html=True)
-
 #-------------------------------------------------------------------------------------------------------------------
 
 #About Data
@@ -285,7 +290,7 @@ elif selected == "Project Developers":
             
             ("https://media.licdn.com/dms/image/D4D03AQEx3oxABIzuFw/profile-displayphoto-shrink_400_400/0/1699646324460?e=1718841600&v=beta&t=9u8Sf_Y3GW07Uelq2YO0N5EQT-owSFNtDqasTwUvIfc", "Sevda Nur Çopur", "https://www.linkedin.com/in/sevdanurcopur/"),
             
-            ("https://media.licdn.com/dms/image/D4D35AQFFivOBr1aqiw/profile-framedphoto-shrink_400_400/0/1707406247483?e=1714482000&v=beta&t=efw_axveoFNA2unGF2X-pt-hagr6Li8sgZhk1x8lTNE", "Sefa Berk Acar", "https://www.linkedin.com/in/sefaberkacar/")
+            ("https://media.licdn.com/dms/image/D4D35AQFFivOBr1aqiw/profile-framedphoto-shrink_400_400/0/1707406247483?e=1715360400&v=beta&t=K0D5l99fePmwG6INw_00geuEfJ5VXxMUMtYOlDy6DV0", "Sefa Berk Acar", "https://www.linkedin.com/in/sefaberkacar/")
 
         ]
 
